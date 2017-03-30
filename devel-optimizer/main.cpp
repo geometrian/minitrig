@@ -16,8 +16,8 @@
 namespace optimizing {
 
 
-static float sin_near_coeffs5_1[5] = { 1.0f, -1.0f/6.0f, 1.0f/120.0f, -1.0f/5040.0f, 1.0f/362880.0f };
-static float sin_near_coeffs5_2[5] = { 1.0000000000e+00f, -1.6666673124e-01f, 8.3330580965e-03f, -1.9618441002e-04f, -2.2868576366e-07f };
+static float const sin_near_coeffs5_1[5] = { 1.0f, -1.0f/6.0f, 1.0f/120.0f, -1.0f/5040.0f, 1.0f/362880.0f };
+static float const sin_near_coeffs5_2[5] = { 1.0000000000e+00f, -1.6666673124e-01f, 8.3330580965e-03f, -1.9618441002e-04f, -2.2868576366e-07f };
 
 //-0.25*PI < x < 0.25*PI
 static float sin_near5(float x, float const A[5]) {
@@ -25,8 +25,8 @@ static float sin_near5(float x, float const A[5]) {
 }
 
 
-static float sin_far_coeffs_5_1[5] = { 1.0f, -0.5f, 1.0f/24.0f, -1.0f/720.0f, 1.0f/40320.0f };
-static float sin_far_coeffs_5_2[5] = { 1.0e+00f, -4.9999979138e-01f, 4.1666436940e-02f, -1.3899283949e-03f, 2.6317742595e-05f };
+static float const sin_far_coeffs_5_1[5] = { 1.0f, -0.5f, 1.0f/24.0f, -1.0f/720.0f, 1.0f/40320.0f };
+static float const sin_far_coeffs_5_2[5] = { 1.0e+00f, -4.9999979138e-01f, 4.1666436940e-02f, -1.3899283949e-03f, 2.6317742595e-05f };
 
 //0.25*PI < x < 0.5*PI
 static float sin_far5(float x, float const A[5]) {
@@ -35,9 +35,9 @@ static float sin_far5(float x, float const A[5]) {
 }
 
 
-static float arcsin_coeffs4_1[4] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
-static float arcsin_coeffs4_2[4] = { 1.5707583427e+00f, -2.1287551522e-01f, 7.6898902655e-02f, -2.0892916247e-02f };
-static float arcsin_coeffs5[5]   = { 1.5707541704e+00f, -2.1270722151e-01f, 7.5888827443e-02f, -1.9007723778e-02f, -1.0771057568e-03f };
+static float const arcsin_coeffs4_1[4] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
+static float const arcsin_coeffs4_2[4] = { 1.5707583427e+00f, -2.1287518740e-01f, 7.6897978783e-02f, -2.0892569795e-02f };
+static float const arcsin_coeffs5[5]   = { 1.5707583427e+00f, -2.1287535131e-01f, 7.6900094748e-02f, -2.0897671580e-02f, 3.3740022900e-06f };
 
 static float arcsin4(float x, float const A[4]) {
 	float negate = x<0.0f ? 1.0f : 0.0f;
@@ -55,9 +55,9 @@ static float arcsin5(float x, float const A[5]) {
 }
 
 
-static float arccos_coeffs4_1[5] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
-static float arccos_coeffs4_2[5] = { 1.5707437992e+00f, -2.1242122352e-01f, 7.5053036213e-02f, -1.9164543599e-02f };
-static float arccos_coeffs5[5]   = { 1.5707540512e+00f, -2.1270623803e-01f, 7.5885929167e-02f, -1.9007002935e-02f, -1.0748786153e-03f };
+static float const arccos_coeffs4_1[5] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
+static float const arccos_coeffs4_2[5] = { 1.5707582235e+00f, -2.1287369728e-01f, 7.6894350350e-02f, -2.0889861509e-02f };
+static float const arccos_coeffs5[5]   = { 1.5707595348e+00f, -2.1292459965e-01f, 7.7204361558e-02f, -2.1477775648e-02f, 3.3965636976e-04f };
 
 static float arccos4(float x, float const A[4]) {
 	float negate = x<0.0f ? 1.0f : 0.0f;
@@ -92,7 +92,7 @@ inline static float get_max_err(std::vector<float> const& xs, std::vector<float>
 	return max_err;
 }
 
-inline static void optimize(char const* name, float(*fn)(float,float const*),float fn_params[],size_t fn_params_len, float low,float high, size_t steps) {
+inline static void optimize(char const* name, float(*fn)(float,float const*),float const fn_params[],size_t fn_params_len, float low,float high, size_t steps) {
 	assert(steps>0);
 	assert(high>=low);
 
@@ -195,7 +195,7 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 			printf("\r  Best err: %.10e; Step: %.10e     ",best_err,(double)step); fflush(stdout);
 			improved = true;
 		} else {
-			if (++steps_since_last_improvement==1000) {
+			if (++steps_since_last_improvement==10000) {
 				step *= 0.6f;
 				steps_since_last_improvement = 0;
 				printf("\r  Best err: %.10e; Step: %.10e     ",best_err,(double)step); fflush(stdout);
@@ -218,6 +218,7 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 int main(int /*argc*/, char* /*argv*/[]) {
 	//optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_1,5, 0.0f,F32_QPI, 10000 );
 	//optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_2,5, 0.0f,F32_QPI, 10000 );
+	//optimize("sin",optimizing::sin_far5,optimizing::sin_far_coeffs_5_1,5, F32_QPI,F32_HPI, 10000 );
 	//optimize("sin",optimizing::sin_far5,optimizing::sin_far_coeffs_5_2,5, F32_QPI,F32_HPI, 10000 );
 
 	//optimize("arcsin",optimizing::arcsin4,optimizing::arcsin_coeffs4_1,4, -1.0f,1.0f, 10000 );
@@ -225,7 +226,7 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	//optimize("arcsin",optimizing::arcsin5,optimizing::arcsin_coeffs5,5, -1.0f,1.0f, 10000 );
 
 	//optimize("arccos",optimizing::arccos4,optimizing::arccos_coeffs4_1,4, -1.0f,1.0f, 10000 );
-	optimize("arccos",optimizing::arccos4,optimizing::arccos_coeffs4_2,4, -1.0f,1.0f, 10000 );
+	//optimize("arccos",optimizing::arccos4,optimizing::arccos_coeffs4_2,4, -1.0f,1.0f, 10000 );
 	//optimize("arccos",optimizing::arccos5,optimizing::arccos_coeffs5,5, -1.0f,1.0f, 10000 );
 
 	getchar();
