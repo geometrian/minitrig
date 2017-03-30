@@ -13,16 +13,22 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\3rdparty\Precision\precisioncore.cpp">
-      <Filter>libminitrig</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libminitrig\_arcsin.cpp">
-      <Filter>libminitrig</Filter>
-    </ClCompile>
-    <ClCompile Include="..\libminitrig\_cos.cpp">
-      <Filter>libminitrig</Filter>
-    </ClCompile>
     <ClCompile Include="..\libminitrig\_misc.cpp">
+      <Filter>libminitrig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\3rdparty\Precision\precisioncore.cpp">
+      <Filter>3rdparty\Precision</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libminitrig\_sin-f32.cpp">
+      <Filter>libminitrig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libminitrig\_cos-f32.cpp">
+      <Filter>libminitrig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libminitrig\_arcsin-f32.cpp">
+      <Filter>libminitrig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libminitrig\_arccos-f32.cpp">
       <Filter>libminitrig</Filter>
     </ClCompile>
     <ClCompile Include="..\libminitrig\include-highprec.cpp">
@@ -36,13 +42,16 @@
     <ClInclude Include="..\libminitrig\_misc.hpp">
       <Filter>libminitrig</Filter>
     </ClInclude>
-    <ClInclude Include="..\3rdparty\Precision\fprecision.hpp">
+    <ClInclude Include="..\3rdparty\Precision\fprecision.h">
       <Filter>3rdparty\Precision</Filter>
     </ClInclude>
     <ClInclude Include="..\3rdparty\Precision\iprecision.h">
       <Filter>3rdparty\Precision</Filter>
     </ClInclude>
     <ClInclude Include="..\libminitrig\include-highprec.hpp">
+      <Filter>libminitrig</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libminitrig\include-f32.hpp">
       <Filter>libminitrig</Filter>
     </ClInclude>
     <ClInclude Include="..\libminitrig\include-cmath.hpp">
