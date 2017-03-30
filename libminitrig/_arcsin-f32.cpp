@@ -12,7 +12,7 @@ float arcsin(float x) {
 	float negate = x<0.0f ? 1.0f : 0.0f;
 	x = abs(x);
 
-	float ret = 1.5707440376e+00f - 2.1242626011e-01f*x + 7.5070030987e-02f*x*x - 1.9178723916e-02f*x*x*x;
+	float ret = 1.5707583427e+00f - 2.1287551522e-01f*x + 7.6898902655e-02f*x*x - 2.0892916247e-02f*x*x*x;
 	ret = F32_HPI - sqrt(1.0f-x)*ret;
 
 	return ret - 2.0f * negate * ret;

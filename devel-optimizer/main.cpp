@@ -35,8 +35,8 @@ static float sin_far5(float x, float const A[5]) {
 }
 
 
-static float arcsin_coeffs4_1[4] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f };
-static float arcsin_coeffs4_2[4] = { 1.5707440376e+00f, -2.1242626011e-01f, 7.5070030987e-02f, -1.9178723916e-02f };
+static float arcsin_coeffs4_1[4] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
+static float arcsin_coeffs4_2[4] = { 1.5707583427e+00f, -2.1287551522e-01f, 7.6898902655e-02f, -2.0892916247e-02f };
 static float arcsin_coeffs5[5]   = { 1.5707541704e+00f, -2.1270722151e-01f, 7.5888827443e-02f, -1.9007723778e-02f, -1.0771057568e-03f };
 
 static float arcsin4(float x, float const A[4]) {
@@ -55,7 +55,7 @@ static float arcsin5(float x, float const A[5]) {
 }
 
 
-static float arccos_coeffs4_1[5] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f };
+static float arccos_coeffs4_1[5] = { 1.5707288f, -0.2121144f, 0.0742610f, -0.0187293f }; //original
 static float arccos_coeffs4_2[5] = { 1.5707437992e+00f, -2.1242122352e-01f, 7.5053036213e-02f, -1.9164543599e-02f };
 static float arccos_coeffs5[5]   = { 1.5707540512e+00f, -2.1270623803e-01f, 7.5885929167e-02f, -1.9007002935e-02f, -1.0748786153e-03f };
 
