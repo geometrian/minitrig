@@ -9,7 +9,7 @@ namespace minitrig {
 float cos(float x) {
 	//I'm sorry.
 
-	return sin(x + 0.5f*PI);
+	return sin(x + F32_HPI);
 }
 
 

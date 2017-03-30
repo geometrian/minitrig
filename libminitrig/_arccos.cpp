@@ -18,7 +18,7 @@ float arccos(float x) {
 	ret *= sqrt(1.0f-x);
 	ret -= 2.0f * negate * ret;
 
-	return negate*PI + ret;
+	return negate*F32_PI + ret;
 }
 
 
