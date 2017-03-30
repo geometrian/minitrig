@@ -5,9 +5,15 @@
       <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
       <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
     </Filter>
+    <Filter Include="3rdparty">
+      <UniqueIdentifier>{c3626a10-dc54-4363-b6d8-0a02fe5a6e3a}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="3rdparty\Precision">
+      <UniqueIdentifier>{4db745b4-0aad-4e27-8129-dfc46724ede8}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\libminitrig\_arccos.cpp">
+    <ClCompile Include="..\3rdparty\Precision\precisioncore.cpp">
       <Filter>libminitrig</Filter>
     </ClCompile>
     <ClCompile Include="..\libminitrig\_arcsin.cpp">
@@ -19,7 +25,10 @@
     <ClCompile Include="..\libminitrig\_misc.cpp">
       <Filter>libminitrig</Filter>
     </ClCompile>
-    <ClCompile Include="..\libminitrig\_sin.cpp">
+    <ClCompile Include="..\libminitrig\include-highprec.cpp">
+      <Filter>libminitrig</Filter>
+    </ClCompile>
+    <ClCompile Include="..\libminitrig\include-cmath.cpp">
       <Filter>libminitrig</Filter>
     </ClCompile>
   </ItemGroup>
@@ -27,7 +36,13 @@
     <ClInclude Include="..\libminitrig\_misc.hpp">
       <Filter>libminitrig</Filter>
     </ClInclude>
-    <ClInclude Include="..\libminitrig\include.hpp">
+    <ClInclude Include="..\3rdparty\Precision\fprecision.hpp">
+      <Filter>3rdparty\Precision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\3rdparty\Precision\iprecision.h">
+      <Filter>3rdparty\Precision</Filter>
+    </ClInclude>
+    <ClInclude Include="..\libminitrig\include-highprec.hpp">
       <Filter>libminitrig</Filter>
     </ClInclude>
     <ClInclude Include="..\libminitrig\include-cmath.hpp">

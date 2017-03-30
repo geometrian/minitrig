@@ -26,8 +26,11 @@
     <ClCompile Include="..\libminitrig\_sin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\3rdparty\Precision\fprecision.h" />
+    <ClInclude Include="..\3rdparty\Precision\iprecision.h" />
     <ClInclude Include="..\libminitrig\include-cmath.hpp" />
     <ClInclude Include="..\libminitrig\include.hpp" />
+    <ClInclude Include="..\libminitrig\include-highprec.hpp" />
     <ClInclude Include="..\libminitrig\_misc.hpp" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
