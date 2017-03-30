@@ -28,8 +28,9 @@
 *.out
 *.app
 
-# Build
+# Build and Numerical Cache
 build/
+cache/
 
 # Misc.
 *.VC.db
