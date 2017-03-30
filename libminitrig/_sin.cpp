@@ -4,34 +4,39 @@
 namespace minitrig {
 
 
+//1 Dev Master implementation
+//2 My Maclaurin implementation
+#define IMPL 2
+
+
+#if IMPL == 1
+
 float sin(float x) {
-	/*if (x>PI) {
-		do {
-			x -= 2.0f*PI;
-		} while (x>PI);
+	if (x>PI) {
+		do { x-=2.0f*PI; } while (x> PI);
 	} else if (x<-PI) {
-		do {
-			x += 2.0f*PI;
-		} while (x<-PI);
+		do { x+=2.0f*PI; } while (x<-PI);
 	}
 
 	//http://forum.devmaster.net/t/fast-and-accurate-sine-cosine/9648
-	//Error around 10^-3
-	float y = (4.0f/PI)*x - (4.0f/(PI*PI))*x*abs(x);
-	y = 0.775f*y + 0.225f*y*abs(y);
-	return y;*/
 
+	//Error claimed to be around 10^-3
+
+	float y = (float)(4.0/PI)*x - (float)(4.0/(PI*PI))*x*abs(x);
+	y = 0.775f*y + 0.225f*y*abs(y);
+	return y;
+}
+
+#elif IMPL == 2
+
+float sin(float x) {
 	if (x>PI) {
-		do {
-			x -= 2.0f*PI;
-		} while (x>PI);
+		do { x-=2.0f*PI; } while (x> PI);
 	} else if (x<-PI) {
-		do {
-			x += 2.0f*PI;
-		} while (x<-PI);
+		do { x+=2.0f*PI; } while (x<-PI);
 	}
 
-	//Since no one seems to know how to do this reasonably, just use Maclaurin approximations at -pi/2, 0, and pi/2.  This seems to
+	//Maclaurin approximations at -pi/2, 0, and pi/2.  This seems to
 	//	be sufficient to get accuracy ~10^-6.  Then optimize it to improve the accuracy.
 
 	if (x>0.5f*PI) {
@@ -57,6 +62,8 @@ float sin(float x) {
 
 	return y;
 }
+
+#endif
 
 
 }

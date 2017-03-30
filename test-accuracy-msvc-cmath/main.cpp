@@ -5,15 +5,14 @@
 #include "../libminitrig/include.hpp"
 
 
-static void test( char const* name, float(*fn_dumb)(float), double(*fn_math)(double), float low,float high, size_t steps) {
+static void test( char const* name, float(*fn_mini)(float), float(*fn_gt)(float), float low,float high, size_t steps) {
 	assert(steps>0);
 	assert(high>=low);
 	float max_err = 0.0f;
 	float at_x;
 	for (size_t i=0;i<=steps;++i) {
 		float x = ((float)(i)/(float)(steps))*(high-low) + low;
-		float a=(float)fn_math((double)x), b=fn_dumb(x);
-		float err = fabsf( a - b );
+		float err = fabsf( fn_gt(x) - fn_mini(x) );
 		if (err>max_err) {
 			max_err = err;
 			at_x = x;
@@ -49,13 +48,13 @@ static void graph( float(*fn)(float), float low,float high, size_t height=11) {
 	}
 }
 
-int main(int argc, char* argv[]) {
+int main(int /*argc*/, char* /*argv*/[]) {
 	#define PI 3.14159265358979323f
 	#define N 100000
-	test( "cos", minitrig::cos, cos, -1.0f*PI,1.0f*PI, N);
-	test( "sin", minitrig::sin, sin, -1.0f*PI,1.0f*PI, N);
-	test( "arccos", minitrig::arccos, acos, -1.0f,1.0f, N);
-	test( "arcsin", minitrig::arcsin, asin, -1.0f,1.0f, N);
+	test( "cos", minitrig::cos, cosf, -1.0f*PI,1.0f*PI, N);
+	test( "sin", minitrig::sin, sinf, -1.0f*PI,1.0f*PI, N);
+	test( "arccos", minitrig::arccos, acosf, -1.0f,1.0f, N);
+	test( "arcsin", minitrig::arcsin, asinf, -1.0f,1.0f, N);
 
 	printf("%f %f %f %f %f\n",minitrig::sin(0),minitrig::sin(0.5f*PI),minitrig::sin(PI),minitrig::sin(1.5f*PI),minitrig::sin(2.0f*PI));
 
