@@ -27,3 +27,12 @@
 *.exe
 *.out
 *.app
+
+# Build
+build/
+
+# Misc.
+*.VC.db
+*.VC.opendb
+*.suo
+*.lnk
