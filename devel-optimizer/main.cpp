@@ -130,7 +130,7 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 	float step = 1e-1f;
 	size_t iters = 0;
 	bool improved = false;
-	while (step>1e-12f) {
+	while (step>1e-9f) {
 		float errs[THREADS];
 		#pragma omp parallel num_threads(THREADS)
 		{
@@ -138,10 +138,29 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 
 			memcpy(fn_params_temp[id].data(),fn_params_best.data(), fn_params_len*sizeof(float));
 
-			size_t index = std::uniform_int_distribution<size_t>(0,fn_params_len-1)(rngs[id]);
-			for (size_t i=0;i<fn_params_len;++i) {
-				float delta = std::uniform_real_distribution<float>(-step,step)(rngs[id]);
-				fn_params_temp[id][i] += delta;
+			int op = std::uniform_int_distribution<int>(0,4)(rngs[id]); //0,1,2,3,4
+			switch (op) {
+				case 0: {
+					size_t index = std::uniform_int_distribution<size_t>(0,fn_params_len-1)(rngs[id]);
+					float delta = std::uniform_real_distribution<float>(-step,step)(rngs[id]);
+					fn_params_temp[id][index] += delta;
+					break;
+				}
+				case 1: {
+					size_t index1 = std::uniform_int_distribution<size_t>(0,fn_params_len-1)(rngs[id]);
+					float delta1 = std::uniform_real_distribution<float>(-step,step)(rngs[id]);
+					fn_params_temp[id][index1] += delta1;
+					size_t index2 = std::uniform_int_distribution<size_t>(0,fn_params_len-1)(rngs[id]);
+					float delta2 = std::uniform_real_distribution<float>(-step,step)(rngs[id]);
+					fn_params_temp[id][index2] += delta2;
+					break;
+				}
+				default:
+					for (size_t i=0;i<fn_params_len;++i) {
+						float delta = std::uniform_real_distribution<float>(-step,step)(rngs[id]);
+						fn_params_temp[id][i] += delta;
+					}
+					break;
 			}
 
 			float err = get_max_err(xs, gts, fn,fn_params_temp[id].data());
@@ -160,20 +179,26 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 		#pragma omp barrier
 
 		//printf("\r");for (size_t i=0;i<THREADS;++i) printf("%f ",errs[i]); printf("\n");
+		bool improved_temp = false;
 		for (size_t i=0;i<THREADS;++i) {
 			if (errs[i]<best_err) {
 				best_err = errs[i];
 				memcpy(fn_params_best.data(),fn_params_temp[i].data(), fn_params_len*sizeof(float));
+				improved_temp = true;
+			} else if (errs[i]==best_err) {
+				memcpy(fn_params_best.data(),fn_params_temp[i].data(), fn_params_len*sizeof(float));
+			}
+		}
+		if (improved_temp) {
+			steps_since_last_improvement = 0;
+			step *= 1.0f/0.9f;
+			printf("\r  Best err: %.10e; Step: %.10e     ",best_err,(double)step); fflush(stdout);
+			improved = true;
+		} else {
+			if (++steps_since_last_improvement==1000) {
+				step *= 0.6f;
 				steps_since_last_improvement = 0;
-				step *= 1.0f/0.9f;
-				printf("\r  Best err: %e; Step: %e     ",best_err,(double)step); fflush(stdout);
-				improved = true;
-			} else {
-				if (++steps_since_last_improvement==10000) {
-					step *= 0.9f;
-					steps_since_last_improvement = 0;
-					printf("\r  Best err: %e; Step: %e     ",best_err,(double)step); fflush(stdout);
-				}
+				printf("\r  Best err: %.10e; Step: %.10e     ",best_err,(double)step); fflush(stdout);
 			}
 		}
 
@@ -195,7 +220,13 @@ int main(int /*argc*/, char* /*argv*/[]) {
 	//optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_2,5, 0.0f,F32_QPI, 10000 );
 	//optimize("sin",optimizing::sin_far5,optimizing::sin_far_coeffs_5_2,5, F32_QPI,F32_HPI, 10000 );
 
-	optimize("arcsin",optimizing::arcsin4,optimizing::arcsin_coeffs4_2,4, -1.0f,1.0f, 10000 );
+	//optimize("arcsin",optimizing::arcsin4,optimizing::arcsin_coeffs4_1,4, -1.0f,1.0f, 10000 );
+	//optimize("arcsin",optimizing::arcsin4,optimizing::arcsin_coeffs4_2,4, -1.0f,1.0f, 10000 );
+	//optimize("arcsin",optimizing::arcsin5,optimizing::arcsin_coeffs5,5, -1.0f,1.0f, 10000 );
+
+	//optimize("arccos",optimizing::arccos4,optimizing::arccos_coeffs4_1,4, -1.0f,1.0f, 10000 );
+	optimize("arccos",optimizing::arccos4,optimizing::arccos_coeffs4_2,4, -1.0f,1.0f, 10000 );
+	//optimize("arccos",optimizing::arccos5,optimizing::arccos_coeffs5,5, -1.0f,1.0f, 10000 );
 
 	getchar();
 
