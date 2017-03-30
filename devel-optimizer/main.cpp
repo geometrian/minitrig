@@ -118,18 +118,21 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 	std::vector<float> fn_params_best(fn_params_len);
 	memcpy(fn_params_best.data(),fn_params, fn_params_len*sizeof(float));
 
-	std::mt19937 rngs[8];
-	std::vector<float> fn_params_temp[8];
-	for (size_t i=0;i<8;++i) fn_params_temp[i].resize(fn_params_len);
+	#define THREADS 11
+
+	std::mt19937 rngs[THREADS]; for (size_t i=0;i<THREADS;++i) rngs[i].seed((unsigned)(i*356));
+	std::vector<float> fn_params_temp[THREADS];
+	for (size_t i=0;i<THREADS;++i) fn_params_temp[i].resize(fn_params_len);
 
 	float best_err = get_max_err(xs, gts, fn,fn_params);
 
 	int steps_since_last_improvement = 0;
 	float step = 1e-1f;
 	size_t iters = 0;
+	bool improved = false;
 	while (step>1e-12f) {
-		float errs[8];
-		#pragma omp parallel num_threads(8)
+		float errs[THREADS];
+		#pragma omp parallel num_threads(THREADS)
 		{
 			int id = omp_get_thread_num();
 
@@ -143,15 +146,28 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 
 			float err = get_max_err(xs, gts, fn,fn_params_temp[id].data());
 			errs[id] = err;
+
+			/*#pragma omp critical
+			{
+				printf("thread %d: [ ",id);
+				for (float param : fn_params_temp[id]) {
+					printf("%f ",(double)param);
+				}
+				printf("] -> %f\n",(double)err);
+			}*/
 		}
 
-		for (size_t i=0;i<8;++i) {
+		#pragma omp barrier
+
+		//printf("\r");for (size_t i=0;i<THREADS;++i) printf("%f ",errs[i]); printf("\n");
+		for (size_t i=0;i<THREADS;++i) {
 			if (errs[i]<best_err) {
 				best_err = errs[i];
 				memcpy(fn_params_best.data(),fn_params_temp[i].data(), fn_params_len*sizeof(float));
 				steps_since_last_improvement = 0;
 				step *= 1.0f/0.9f;
 				printf("\r  Best err: %e; Step: %e     ",best_err,(double)step); fflush(stdout);
+				improved = true;
 			} else {
 				if (++steps_since_last_improvement==10000) {
 					step *= 0.9f;
@@ -165,13 +181,21 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 	}
 
 	printf("\nCompleted:\n");
-	for (float param : fn_params_best) {
-		printf("\n  %.10e\n",(double)param);
+	if (improved) {
+		for (float param : fn_params_best) {
+			printf("\n  %.10e\n",(double)param);
+		}
+	} else {
+		printf("Did not improve.\n");
 	}
 }
 
 int main(int /*argc*/, char* /*argv*/[]) {
-	optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_2,5, 0.0f,F32_QPI, 10000 );
+	//optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_1,5, 0.0f,F32_QPI, 10000 );
+	//optimize("sin",optimizing::sin_near5,optimizing::sin_near_coeffs5_2,5, 0.0f,F32_QPI, 10000 );
+	//optimize("sin",optimizing::sin_far5,optimizing::sin_far_coeffs_5_2,5, F32_QPI,F32_HPI, 10000 );
+
+	optimize("arcsin",optimizing::arcsin4,optimizing::arcsin_coeffs4_2,4, -1.0f,1.0f, 10000 );
 
 	getchar();
 
