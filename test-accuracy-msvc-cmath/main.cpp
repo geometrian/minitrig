@@ -8,8 +8,10 @@
 #include "../libminitrig/include-f32.hpp"
 #include "../libminitrig/include-highprec.hpp"
 
+#include "../libminitrig/_misc.hpp"
 
-static void test( char const* name, float(*fn_mini)(float), float(*fn_gt)(float), float low,float high, size_t steps) {
+
+static void test_and_gen_cache(char const* name, float(*fn_mini)(float), float(*fn_gt)(float), float low,float high, size_t steps) {
 	assert(steps>0);
 	assert(high>=low);
 
@@ -22,8 +24,10 @@ static void test( char const* name, float(*fn_mini)(float), float(*fn_gt)(float)
 	std::string filename = "cache/"+std::string(name)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
 	FILE* file = fopen(filename.c_str(),"rb");
 	if (file==nullptr) {
-		for (size_t i=0;i<=steps;++i) {
-			gts[i] = fn_gt(xs[i]);
+		//Disabled.  It seems the arbitrary precision library isn't threadsafe.
+		//#pragma omp parallel for
+		for (int i=0;i<=(int)steps;++i) {
+			gts[(size_t)i] = fn_gt(xs[(size_t)i]);
 		}
 		file = fopen(filename.c_str(),"wb");
 		fwrite(gts.data(), sizeof(float),steps+1, file);
@@ -73,16 +77,17 @@ static void graph( float(*fn)(float), float low,float high, size_t height=11) {
 }
 
 int main(int /*argc*/, char* /*argv*/[]) {
-	#define PI 3.14159265358979323f
-	#define N 10000
-	test( "cos", minitrig::cos, highprec::cos, -1.0f*PI,1.0f*PI, N);
-	test( "sin", minitrig::sin, highprec::sin, -1.0f*PI,1.0f*PI, N);
-	test( "arccos", minitrig::arccos, highprec::arccos, -1.0f,1.0f, N);
-	test( "arcsin", minitrig::arcsin, highprec::arcsin, -1.0f,1.0f, N);
+	#define N 100
+	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, 0.0f,F32_QPI, N);
+	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, F32_QPI,F32_HPI, N);
+	test_and_gen_cache( "cos", minitrig::cos, highprec::cos, -F32_PI,F32_PI, N);
+	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, -F32_PI,F32_PI, N);
+	test_and_gen_cache( "arccos", minitrig::arccos, highprec::arccos, -1.0f,1.0f, N);
+	test_and_gen_cache( "arcsin", minitrig::arcsin, highprec::arcsin, -1.0f,1.0f, N);
 
-	printf("%f %f %f %f %f\n",minitrig::sin(0),minitrig::sin(0.5f*PI),minitrig::sin(PI),minitrig::sin(1.5f*PI),minitrig::sin(2.0f*PI));
+	//printf("%f %f %f %f %f\n",minitrig::sin(0),minitrig::sin(0.5f*PI),minitrig::sin(PI),minitrig::sin(1.5f*PI),minitrig::sin(2.0f*PI));
 
-	graph( minitrig::sin, -2.0f*PI,2.0f*PI );
+	//graph( minitrig::sin, -2.0f*PI,2.0f*PI );
 
 	getchar();
 
