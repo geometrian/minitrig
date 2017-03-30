@@ -30,5 +30,8 @@
     <ClInclude Include="..\libminitrig\include.hpp">
       <Filter>libminitrig</Filter>
     </ClInclude>
+    <ClInclude Include="..\libminitrig\include-cmath.hpp">
+      <Filter>libminitrig</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

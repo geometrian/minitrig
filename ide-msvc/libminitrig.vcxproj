@@ -26,6 +26,7 @@
     <ClCompile Include="..\libminitrig\_sin.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\libminitrig\include-cmath.hpp" />
     <ClInclude Include="..\libminitrig\include.hpp" />
     <ClInclude Include="..\libminitrig\_misc.hpp" />
   </ItemGroup>
