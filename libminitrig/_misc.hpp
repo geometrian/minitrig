@@ -18,7 +18,13 @@ namespace minitrig {
 
 
 float abs(float x);
+
 float sqrt(float x);
+
+float fmod(float x,float m);
+
+int floor(float x);
+int floor(double x);
 
 
 }
