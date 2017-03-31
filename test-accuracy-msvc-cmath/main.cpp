@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstdio>
 
+#include <algorithm>
 #include <string>
 #include <vector>
 
@@ -11,9 +12,23 @@
 #include "../libminitrig/_misc.hpp"
 
 
+#ifdef _MSC_VER
+	#include <intrin.h>
+	inline uint64_t rdtsc(void) {
+		return __rdtsc();
+	}
+#else
+	inline uint64_t rdtsc(void) {
+		uint32_t low,high;
+		__asm__ __volatile__ ("rdtsc" : "=a" (low), "=d" (high));
+		return ((uint64_t)(high) << 32) | low;
+	}
+#endif
+
 static void gen_accuracy_data(char const* cachename, char const* fnname, float(*fn)(float), float low,float high, size_t steps) {
 	assert(steps>0);
 	assert(high>=low);
+	FILE* file;
 
 	std::vector<float> xs(steps+1);
 	for (size_t i=0;i<=steps;++i) xs[i]=((float)(i)/(float)(steps))*(high-low) + low;
@@ -21,7 +36,7 @@ static void gen_accuracy_data(char const* cachename, char const* fnname, float(*
 	std::vector<float> gts(steps+1);
 	{
 		std::string filename = ".cache/"+std::string(cachename)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
-		FILE* file = fopen(filename.c_str(),"rb");
+		file = fopen(filename.c_str(),"rb");
 		if (file==nullptr) {
 			fprintf(stderr,"Could not open cache file \"%s\".  Run the `test-gen-cache` first to generate.\n",filename.c_str());
 			getchar();
@@ -31,13 +46,38 @@ static void gen_accuracy_data(char const* cachename, char const* fnname, float(*
 		fclose(file);
 	}
 
-	std::vector<float> errs(steps+1);
-	for (size_t i=0;i<=steps;++i) errs[i]=fabsf( gts[i] - fn(xs[i]) );
+	std::vector<float> vals(steps+1);
+	std::vector<uint32_t> dts(steps+1,std::numeric_limits<uint32_t>::max());
+	for (int j=0;j<256;++j) {
+		uint32_t overhead;
+		{
+			uint64_t t0 = rdtsc();
+			uint64_t t1 = rdtsc();
+			overhead = (uint32_t)(t1 - t0);
+		}
+		for (size_t i=0;i<=steps;++i) {
+			float x = xs[i];
+			uint64_t t0 = rdtsc();
+			float val = fn(x);
+			uint64_t t1 = rdtsc();
+			vals[i] = val;
+			dts[i] = std::min( dts[i], (uint32_t)(t1 - t0 - overhead) );
+		}
+	}
 
-	FILE* file = fopen( (".accuracy/"+std::string(fnname)+".f32").c_str(), "wb" );
+	std::vector<float> errs(steps+1);
+	for (size_t i=0;i<=steps;++i) fabsf( gts[i] - vals[i] );
+
+	file = fopen( (".accuracy/"+std::string(fnname)+".f32").c_str(), "wb" );
 	fwrite(&low, sizeof(float),1, file);
 	fwrite(&high, sizeof(float),1, file);
 	fwrite(errs.data(), sizeof(float),errs.size(), file);
+	fclose(file);
+
+	file = fopen( (".speed/"+std::string(fnname)+".fu32").c_str(), "wb" );
+	fwrite(&low, sizeof(uint32_t),1, file);
+	fwrite(&high, sizeof(uint32_t),1, file);
+	fwrite(dts.data(), sizeof(uint32_t),dts.size(), file);
 	fclose(file);
 }
 

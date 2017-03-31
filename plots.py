@@ -10,23 +10,27 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 
-class ErrSeries(object):
+class SeriesBase(object):
     def __init__(self, name):
         self.name = name
+
+    def read_from_file(self, path, datatype):
+        file = open(path,"rb")
+        self.low,  = struct.unpack("f", file.read(4))
+        self.high, = struct.unpack("f", file.read(4))
+        data = file.read()
+        file.close()
+
+        self.data = np.array( struct.unpack(datatype*(len(data)//4), data) )
+        self.xs = np.linspace(self.low,self.high,len(self.data))
+class ErrSeries(SeriesBase):
+    def __init__(self, name):
+        SeriesBase.__init__(self,name)
 
     @staticmethod
     def get_from_file(name):
         result = ErrSeries(name)
-        
-        file = open(".accuracy/"+name+".f32","rb")
-        result.low,  = struct.unpack("f", file.read(4))
-        result.high, = struct.unpack("f", file.read(4))
-        data = file.read()
-        file.close()
-
-        result.data = np.array( struct.unpack("f"*(len(data)//4), data) )
-        result.xs = np.linspace(result.low,result.high,len(result.data))
-
+        result.read_from_file(".accuracy/"+name+".f32","f")
         return result
     @staticmethod
     def get_from_const(name, low,high, value):
@@ -39,60 +43,99 @@ class ErrSeries(object):
         result.data = np.array([value]*2)
 
         return result
+class LatencySeries(SeriesBase):
+    def __init__(self, name):
+        SeriesBase.__init__(self,name)
 
-def create_plot(fnname,series_list):
-    series0 = series_list[0]
-    for series in series_list:
-        assert series.low  == series0.low
-        assert series.high == series0.high
+    @staticmethod
+    def get_from_file(name):
+        result = LatencySeries(name)
+        result.read_from_file(".speed/"+name+".fu32","I")
+        return result
+
+#http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.legend
+#plt.yscale("log")
+    
+colors = [ "#1F77B4", "#FF7F0E", "#2CA02C", "#D62728", "#9467BD", "#8C564B", "#E377C2", "#7F7F7F", "#BCBD22", "#17BECF" ]
+def create_plot_accuracy(fnname,series_list):
+    for series in series_list: assert series.low==series_list[0].low and series.high==series_list[0].high
 
     plots = []
-    colors = [
-        "#1F77B4", "#FF7F0E", "#2CA02C", "#D62728",
-        "#9467BD", "#8C564B", "#E377C2", "#7F7F7F",
-        "#BCBD22", "#17BECF"
-    ]
     for series in series_list:
         i = len(plots)
         if len(series.xs) == 2:
             plot, = plt.plot(series.xs,series.data, label=series.name, linewidth=2,c=colors[i],zorder=i)
         else:
             plot  = plt.scatter(series.xs,series.data, label=series.name, s=2,c=colors[i],zorder=i)
-##        plot, = plt.plot(series.xs,series.data, label=series.name, linewidth=1)
         plots.append(plot)
 
-    plt.legend(handles=plots,loc="upper center")
+    plt.axvspan(0.0,2.0*pi, color="blue", alpha=0.1)
 
-    #plt.xticks(list(plt.xticks()[0])+[ pi, 2.0*pi ])
-##    plt.xticks(
-##        [0.0, pi*0.5, pi, pi*1.5, 2.0*pi],
-##        ["0","π/2","π","3π/2","2π"]
-##    )
+    plt.legend(loc="upper left")
+
     plt.xticks(
         [-2.0*pi, -pi, 0, pi, 2.0*pi, 3.0*pi, 4.0*pi],
         ["-2π","-π","0","π","2π","3π","4π"]
     )
 
-    #plt.yscale("log")
-
-    plt.xlabel("x")
-    plt.ylabel("|error|")
+    plt.xlabel("x (radians)")
+    plt.ylabel("|Error|")
     plt.title("Absolute Error (%s)"%(fnname))
 
     plt.grid(True)
 
     max_val = max([ np.max(series.data) for series in series_list ])
+    #max_val = 5e-7
+    plt.ylim(( 0.0, max_val ))
+
+    plt.show()
+def create_plot_latency(fnname,series_list):
+    for series in series_list: assert series.low==series_list[0].low and series.high==series_list[0].high
+
+    plots = []
+    for series in series_list:
+        i = len(plots)
+        plot, = plt.plot(series.xs,series.data, label=series.name, linewidth=2,c=colors[i],zorder=i)
+##        plot  = plt.scatter(series.xs,series.data, label=series.name, s=2,c=colors[i],zorder=i)
+        plots.append(plot)
+
+    plt.axvspan(0.0,2.0*pi, color="blue", alpha=0.1)
+
+    plt.legend(loc="upper left")
+
+    plt.xticks(
+        [-2.0*pi, -pi, 0, pi, 2.0*pi, 3.0*pi, 4.0*pi],
+        ["-2π","-π","0","π","2π","3π","4π"]
+    )
+
+    plt.xlabel("x (radians)")
+    plt.ylabel("Latency (cycles)")
+    plt.title("Latency (%s)"%(fnname))
+
+##    plt.yscale("log")
+
+    plt.grid(True)
+
+    max_val = max([ np.max(series.data) for series in series_list ])
+##    max_val = 1000
     plt.ylim(( 0.0, max_val ))
 
     plt.show()
 
 
 def main():
-    sin_32f_minitrig = ErrSeries.get_from_file("sin-32f-minitrig")
-    sin_32f_msvc = ErrSeries.get_from_file("sin-32f-msvc")
-    eps = ErrSeries.get_from_const("machine epsilon", sin_32f_minitrig.low,sin_32f_minitrig.high, 2.0**-23.0)
-    create_plot("sin",[
-        eps,
+##    sin_32f_minitrig = ErrSeries.get_from_file("sin-32f-minitrig")
+##    sin_32f_msvc = ErrSeries.get_from_file("sin-32f-msvc")
+##    eps = ErrSeries.get_from_const("machine epsilon", sin_32f_minitrig.low,sin_32f_minitrig.high, 2.0**-23.0)
+##    create_plot_accuracy("sin",[
+##        eps,
+##        sin_32f_minitrig,
+##        sin_32f_msvc
+##    ])
+
+    sin_32f_minitrig = LatencySeries.get_from_file("sin-32f-minitrig")
+    sin_32f_msvc = LatencySeries.get_from_file("sin-32f-msvc")
+    create_plot_latency("sin",[
         sin_32f_minitrig,
         sin_32f_msvc
     ])

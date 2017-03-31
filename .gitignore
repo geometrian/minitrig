@@ -28,10 +28,11 @@
 *.out
 *.app
 
-# Build and Numerical Cache
+# Build and Data
 .build/
-.cache/
 .accuracy/
+.cache/
+.speed/
 
 # Misc.
 *.VC.db
