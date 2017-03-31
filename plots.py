@@ -5,6 +5,8 @@ from math import *
 import struct
 import traceback
 
+import matplotlib
+#matplotlib.use("wx")
 import matplotlib.pyplot as plt
 
 import numpy as np
@@ -50,7 +52,7 @@ class LatencySeries(SeriesBase):
     @staticmethod
     def get_from_file(name):
         result = LatencySeries(name)
-        result.read_from_file(".speed/"+name+".fu32","I")
+        result.read_from_file(".speed/"+name+".f32","f")
         return result
 
 #http://matplotlib.org/api/pyplot_api.html#matplotlib.pyplot.legend
@@ -88,20 +90,19 @@ def create_plot_accuracy(fnname,series_list):
     #max_val = 5e-7
     plt.ylim(( 0.0, max_val ))
 
-    plt.show()
 def create_plot_latency(fnname,series_list):
     for series in series_list: assert series.low==series_list[0].low and series.high==series_list[0].high
 
     plots = []
     for series in series_list:
         i = len(plots)
-        plot, = plt.plot(series.xs,series.data, label=series.name, linewidth=2,c=colors[i],zorder=i)
-##        plot  = plt.scatter(series.xs,series.data, label=series.name, s=2,c=colors[i],zorder=i)
+##        plot, = plt.plot(series.xs,series.data, label=series.name, linewidth=2,c=colors[i],zorder=i)
+        plot  = plt.scatter(series.xs,series.data, label=series.name, s=2,c=colors[i],zorder=i)
         plots.append(plot)
 
     plt.axvspan(0.0,2.0*pi, color="blue", alpha=0.1)
 
-    plt.legend(loc="upper left")
+    plt.legend()#loc="upper left")
 
     plt.xticks(
         [-2.0*pi, -pi, 0, pi, 2.0*pi, 3.0*pi, 4.0*pi],
@@ -109,7 +110,7 @@ def create_plot_latency(fnname,series_list):
     )
 
     plt.xlabel("x (radians)")
-    plt.ylabel("Latency (cycles)")
+    plt.ylabel("Average Latency (ns)")
     plt.title("Latency (%s)"%(fnname))
 
 ##    plt.yscale("log")
@@ -120,28 +121,37 @@ def create_plot_latency(fnname,series_list):
 ##    max_val = 1000
     plt.ylim(( 0.0, max_val ))
 
-    plt.show()
-
 
 def main():
-##    sin_32f_minitrig = ErrSeries.get_from_file("sin-32f-minitrig")
-##    sin_32f_msvc = ErrSeries.get_from_file("sin-32f-msvc")
-##    eps = ErrSeries.get_from_const("machine epsilon", sin_32f_minitrig.low,sin_32f_minitrig.high, 2.0**-23.0)
-##    create_plot_accuracy("sin",[
-##        eps,
-##        sin_32f_minitrig,
-##        sin_32f_msvc
-##    ])
+    x,y = 50,50
+    w,h = 600,400
+    pad = 20
+    dpi = 100
+    
+    fig1 = plt.figure(figsize=(w//dpi,h//dpi))
+    sin_32f_minitrig = ErrSeries.get_from_file("sin-32f-minitrig")
+    sin_32f_msvc = ErrSeries.get_from_file("sin-32f-msvc")
+    eps = ErrSeries.get_from_const("machine epsilon", sin_32f_minitrig.low,sin_32f_minitrig.high, 2.0**-23.0)
+    create_plot_accuracy("sin",[
+        eps,
+        sin_32f_minitrig,
+        sin_32f_msvc
+    ])
+    plt.get_current_fig_manager().window.wm_geometry("+%d+%d"%(x,y))
 
+    fig2 = plt.figure(figsize=(w//dpi,h//dpi))
     sin_32f_minitrig = LatencySeries.get_from_file("sin-32f-minitrig")
     sin_32f_msvc = LatencySeries.get_from_file("sin-32f-msvc")
     create_plot_latency("sin",[
         sin_32f_minitrig,
         sin_32f_msvc
     ])
+    plt.get_current_fig_manager().window.wm_geometry("+%d+%d"%(x+w+pad,y))
 
     #plt.savefig("test.png")
-    
+
+    plt.show()
+
 if __name__ == "__main__":
     try:
         main()

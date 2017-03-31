@@ -3,6 +3,7 @@
 #include <cstdio>
 
 #include <algorithm>
+#include <chrono>
 #include <string>
 #include <vector>
 
@@ -47,26 +48,60 @@ static void gen_accuracy_data(char const* cachename, char const* fnname, float(*
 	}
 
 	std::vector<float> vals(steps+1);
-	std::vector<uint32_t> dts(steps+1,std::numeric_limits<uint32_t>::max());
-	for (int j=0;j<256;++j) {
-		uint32_t overhead;
-		{
+	std::vector<float> dts(steps+1);
+	#define TRIALS_INNER 512
+	#define TRIALS_OUTER 16
+	for (size_t i=0;i<=steps;++i) {
+		float x=xs[i], val;
+
+		double ns_avg,ns_var,ns_stddev;
+		do {
+			double sum_dts = 0.0;
+			double sum_dts_sq = 0.0;
+			for (size_t j=0;j<TRIALS_OUTER;++j) {
+				auto t0 = std::chrono::high_resolution_clock::now();
+				for (int k=0;k<TRIALS_INNER;++k) val=fn(x);
+				auto t1 = std::chrono::high_resolution_clock::now();
+
+				double ns = (double)(std::chrono::duration_cast<std::chrono::nanoseconds>(t1-t0).count())/TRIALS_INNER;
+				sum_dts    += ns;
+				sum_dts_sq += ns*ns;
+			}
+			ns_avg = sum_dts / TRIALS_OUTER;
+			ns_var = (sum_dts_sq - sum_dts*sum_dts/TRIALS_OUTER)/TRIALS_OUTER;
+			ns_stddev = sqrt(ns_var);
+		} while (ns_stddev/ns_avg >= 0.05);
+
+		vals[i] = val;
+		dts[i] = (float)(ns_avg);
+	}
+	/*for (int j=0;j<TRIALS;++j) {
+		float overhead;
+		do {
 			uint64_t t0 = rdtsc();
 			uint64_t t1 = rdtsc();
-			overhead = (uint32_t)(t1 - t0);
-		}
+			overhead = (float)(t1) - (float)(t0);
+		} while (overhead<=0.0f || overhead>1000.0f);
 		for (size_t i=0;i<=steps;++i) {
-			float x = xs[i];
-			uint64_t t0 = rdtsc();
-			float val = fn(x);
-			uint64_t t1 = rdtsc();
+			float x, val, dt;
+			do {
+				x = xs[i];
+				uint64_t t0 = rdtsc();
+				val = fn(x);
+				uint64_t t1 = rdtsc();
+
+				dt = (float)(t1) - (float)(t0) - overhead;
+			} while (dt<=0.0f || dt>=1000.0f);
 			vals[i] = val;
-			dts[i] = std::min( dts[i], (uint32_t)(t1 - t0 - overhead) );
+			dts[i] += dt;
 		}
 	}
+	for (float& dt_sum : dts) {
+		dt_sum /= (float)(TRIALS);
+	}*/
 
 	std::vector<float> errs(steps+1);
-	for (size_t i=0;i<=steps;++i) fabsf( gts[i] - vals[i] );
+	for (size_t i=0;i<=steps;++i) errs[i]=fabsf( gts[i] - vals[i] );
 
 	file = fopen( (".accuracy/"+std::string(fnname)+".f32").c_str(), "wb" );
 	fwrite(&low, sizeof(float),1, file);
@@ -74,10 +109,10 @@ static void gen_accuracy_data(char const* cachename, char const* fnname, float(*
 	fwrite(errs.data(), sizeof(float),errs.size(), file);
 	fclose(file);
 
-	file = fopen( (".speed/"+std::string(fnname)+".fu32").c_str(), "wb" );
-	fwrite(&low, sizeof(uint32_t),1, file);
-	fwrite(&high, sizeof(uint32_t),1, file);
-	fwrite(dts.data(), sizeof(uint32_t),dts.size(), file);
+	file = fopen( (".speed/"+std::string(fnname)+".f32").c_str(), "wb" );
+	fwrite(&low, sizeof(float),1, file);
+	fwrite(&high, sizeof(float),1, file);
+	fwrite(dts.data(), sizeof(float),dts.size(), file);
 	fclose(file);
 }
 
