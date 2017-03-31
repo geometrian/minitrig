@@ -97,16 +97,14 @@ inline static void optimize(char const* name, float(*fn)(float,float const*),flo
 	assert(high>=low);
 
 	std::vector<float> xs(steps+1);
-	for (size_t i=0;i<=steps;++i) {
-		xs[i] = ((float)(i)/(float)(steps))*(high-low) + low;
-	}
+	for (size_t i=0;i<=steps;++i) xs[i]=((float)(i)/(float)(steps))*(high-low) + low;
 
 	std::vector<float> gts(steps+1);
 	{
-		std::string filename = "cache/"+std::string(name)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
+		std::string filename = ".cache/"+std::string(name)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
 		FILE* file = fopen(filename.c_str(),"rb");
 		if (file==nullptr) {
-			fprintf(stderr,"Could not open cache file \"%s\".  Run the accuracy test first to generate.\n",filename.c_str());
+			fprintf(stderr,"Could not open cache file \"%s\".  Run the `test-gen-cache` first to generate.\n",filename.c_str());
 			return;
 		}
 		fread(gts.data(), sizeof(float),steps+1, file);

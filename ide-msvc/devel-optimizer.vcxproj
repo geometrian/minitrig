@@ -71,27 +71,27 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <LibraryPath>..\build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
+    <OutDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LibraryPath>..\.build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <LibraryPath>..\build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
+    <OutDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LibraryPath>..\.build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <LibraryPath>..\build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
+    <OutDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LibraryPath>..\.build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
-    <IntDir>..\build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
-    <LibraryPath>..\build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
+    <OutDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</OutDir>
+    <IntDir>..\.build\$(Platform)\$(Configuration)\$(ProjectName)\</IntDir>
+    <LibraryPath>..\.build\$(Platform)\$(Configuration)\libminitrig;$(LibraryPath)</LibraryPath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='debug|Win32'">
     <ClCompile>

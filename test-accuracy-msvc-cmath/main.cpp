@@ -11,42 +11,34 @@
 #include "../libminitrig/_misc.hpp"
 
 
-static void test_and_gen_cache(char const* name, float(*fn_mini)(float), float(*fn_gt)(float), float low,float high, size_t steps) {
+static void gen_accuracy_data(char const* cachename, char const* fnname, float(*fn)(float), float low,float high, size_t steps) {
 	assert(steps>0);
 	assert(high>=low);
 
 	std::vector<float> xs(steps+1);
-	for (size_t i=0;i<=steps;++i) {
-		xs[i] = ((float)(i)/(float)(steps))*(high-low) + low;
-	}
+	for (size_t i=0;i<=steps;++i) xs[i]=((float)(i)/(float)(steps))*(high-low) + low;
 
 	std::vector<float> gts(steps+1);
-	std::string filename = "cache/"+std::string(name)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
-	FILE* file = fopen(filename.c_str(),"rb");
-	if (file==nullptr) {
-		//Disabled.  It seems the arbitrary precision library isn't threadsafe.
-		//#pragma omp parallel for
-		for (int i=0;i<=(int)steps;++i) {
-			gts[(size_t)i] = fn_gt(xs[(size_t)i]);
+	{
+		std::string filename = ".cache/"+std::string(cachename)+"_"+std::to_string(steps+1)+"_"+std::to_string(low)+"_"+std::to_string(high)+".f32";
+		FILE* file = fopen(filename.c_str(),"rb");
+		if (file==nullptr) {
+			fprintf(stderr,"Could not open cache file \"%s\".  Run the `test-gen-cache` first to generate.\n",filename.c_str());
+			getchar();
+			return;
 		}
-		file = fopen(filename.c_str(),"wb");
-		fwrite(gts.data(), sizeof(float),steps+1, file);
+		fread(gts.data(), sizeof(float),steps+1, file);
 		fclose(file);
-		file = fopen(filename.c_str(),"rb");
 	}
-	fread(gts.data(), sizeof(float),steps+1, file);
-	fclose(file);
 
-	float max_err = 0.0f;
-	float at_x;
-	for (size_t i=0;i<=steps;++i) {
-		float err = fabsf( gts[i] - fn_mini(xs[i]) );
-		if (err>max_err) {
-			max_err = err;
-			at_x = xs[i];
-		}
-	}
-	printf("Max err %s in range [%f,%f]: %e (at x=%f)\n",name,(double)(low),(double)(high),(double)(max_err),(double)at_x);
+	std::vector<float> errs(steps+1);
+	for (size_t i=0;i<=steps;++i) errs[i]=fabsf( gts[i] - fn(xs[i]) );
+
+	FILE* file = fopen( (".accuracy/"+std::string(fnname)+".f32").c_str(), "wb" );
+	fwrite(&low, sizeof(float),1, file);
+	fwrite(&high, sizeof(float),1, file);
+	fwrite(errs.data(), sizeof(float),errs.size(), file);
+	fclose(file);
 }
 
 template <typename T> static T clamp(T x, T low,T high) {
@@ -77,19 +69,18 @@ static void graph( float(*fn)(float), float low,float high, size_t height=11) {
 }
 
 int main(int /*argc*/, char* /*argv*/[]) {
-	#define N 100
-	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, 0.0f,F32_QPI, N);
-	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, F32_QPI,F32_HPI, N);
-	test_and_gen_cache( "cos", minitrig::cos, highprec::cos, -F32_PI,F32_PI, N);
-	test_and_gen_cache( "sin", minitrig::sin, highprec::sin, -F32_PI,F32_PI, N);
-	test_and_gen_cache( "arccos", minitrig::arccos, highprec::arccos, -1.0f,1.0f, N);
-	test_and_gen_cache( "arcsin", minitrig::arcsin, highprec::arcsin, -1.0f,1.0f, N);
+	#define N 10000
+	gen_accuracy_data( "sin", "sin-32f-minitrig", minitrig::sin, -F32_2PI,2.0f*F32_2PI, N);
+	gen_accuracy_data( "sin", "sin-32f-msvc",            ::sinf, -F32_2PI,2.0f*F32_2PI, N);
 
-	//printf("%f %f %f %f %f\n",minitrig::sin(0),minitrig::sin(0.5f*PI),minitrig::sin(PI),minitrig::sin(1.5f*PI),minitrig::sin(2.0f*PI));
+	gen_accuracy_data( "cos", "cos-32f-minitrig", minitrig::cos, -F32_2PI,2.0f*F32_2PI, N);
+	gen_accuracy_data( "cos", "cos-32f-msvc",            ::cosf, -F32_2PI,2.0f*F32_2PI, N);
 
-	//graph( minitrig::sin, -2.0f*PI,2.0f*PI );
+	gen_accuracy_data( "arcsin", "arcsin-32f-minitrig", minitrig::arcsin, -1.0f,1.0f, N);
+	gen_accuracy_data( "arcsin", "arcsin-32f-msvc",              ::asinf, -1.0f,1.0f, N);
 
-	getchar();
+	gen_accuracy_data( "arccos", "arccos-32f-minitrig", minitrig::arccos, -1.0f,1.0f, N);
+	gen_accuracy_data( "arccos", "arccos-32f-msvc",              ::acosf, -1.0f,1.0f, N);
 
 	return 0;
 }

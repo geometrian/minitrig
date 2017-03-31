@@ -29,8 +29,9 @@
 *.app
 
 # Build and Numerical Cache
-build/
-cache/
+.build/
+.cache/
+.accuracy/
 
 # Misc.
 *.VC.db
